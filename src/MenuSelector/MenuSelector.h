@@ -9,6 +9,9 @@
 #include <AnalogKey.h>
 #include <EncButton.h>
 
+#define EB_DEB_TIME 20
+#define EB_CLICK_TIME 50
+
 typedef void (*MenuHandler)();
 struct Menu
 {
@@ -34,17 +37,16 @@ private:
     uint8_t maxIndex = 0;
     Menu *mainMenu;
     LiquidCrystal *lcd;
-    TimerMs blinkTimer = TimerMs(500, false, false);
-    void next();
-    void prev();
-    void showName(String name);
-    void showCurrentName();
     AnalogKey<A0, 5> buttons;
     VirtButton upButton;
     VirtButton downButton;
     VirtButton leftButton;
     VirtButton rightButton;
     VirtButton selectButton;
+    void next();
+    void prev();
+    void showName(String name);
+    void showCurrentName();
 
 public:
     MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex);

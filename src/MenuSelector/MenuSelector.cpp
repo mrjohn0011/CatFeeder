@@ -102,10 +102,10 @@ Stamp MenuSelector::setDateTime(Stamp defaultDateTime)
         {d.year, 6, 4, 2024, 2105},
         {d.hour, 11, 2, 0, 23},
         {d.minute, 14, 2, 0, 59}};
+    TimerMs blinkTimer = TimerMs(300, true, false);
 
     lcd->setCursor(0, 1);
     lcd->print(d.toString());
-    blinkTimer.start();
     bool showActivePart = true;
 
     while (true)
@@ -132,30 +132,45 @@ Stamp MenuSelector::setDateTime(Stamp defaultDateTime)
             index--;
         }
 
-        if (upButton.click())
+        if (upButton.click() || upButton.step())
         {
             if ((index == 0 && dateParts[index].value < StampUtils::daysInMonth(dateParts[1].value, dateParts[2].value)) ||
                 (index != 0 && dateParts[index].value < dateParts[index].max))
             {
                 dateParts[index].value++;
+                d.set(dateParts[2].value, dateParts[1].value, dateParts[0].value, dateParts[3].value, dateParts[4].value, 0);
             }
         }
 
-        if (downButton.click())
+        if (downButton.click() || downButton.step())
         {
             if (dateParts[index].value > dateParts[index].min)
             {
                 dateParts[index].value--;
+                d.set(dateParts[2].value, dateParts[1].value, dateParts[0].value, dateParts[3].value, dateParts[4].value, 0);
             }
         }
 
         if (selectButton.click())
         {
+            blinkTimer.stop();
+            lcd->setCursor(0, 1);
+            lcd->print("                ");
+            defaultDateTime.set(d);
             return defaultDateTime;
         }
 
         if (blinkTimer.tick())
         {
+            if (!upButton.holding() && !downButton.holding())
+            {
+                showActivePart = !showActivePart;
+            }
+            else
+            {
+                showActivePart = true;
+            }
+
             lcd->setCursor(dateParts[index].position, 1);
             if (showActivePart)
             {
@@ -168,20 +183,6 @@ Stamp MenuSelector::setDateTime(Stamp defaultDateTime)
                 for (uint8_t i = 0; i < dateParts[index].length; i++)
                     lcd->print(" ");
             }
-            showActivePart = !showActivePart;
-        }
-
-        if (upButton.click() || downButton.click())
-        {
-            d.day = dateParts[0].value;
-            d.month = dateParts[1].value;
-            d.year = dateParts[2].value;
-            d.hour = dateParts[3].value;
-            d.minute = dateParts[4].value;
-            d.second = 0;
-            defaultDateTime.set(d);
-            Serial.print("Date Updated: ");
-            Serial.println(d.toString());
         }
     }
 }
