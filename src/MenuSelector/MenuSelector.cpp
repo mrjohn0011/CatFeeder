@@ -80,8 +80,9 @@ void MenuSelector::showMainMenu()
 int MenuSelector::selectNumber(int defaultNumber, int min, int max)
 {
     DateComponent cmp = {defaultNumber, 0, 16, min, max};
+    cmp = editDateComponent(cmp);
     clearSecondRow();
-    return editDateComponent(cmp).value;
+    return cmp.value;
 }
 
 void MenuSelector::toggleDateComponent(DateComponent cmp, bool state)

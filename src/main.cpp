@@ -1,27 +1,33 @@
 #include <MenuSelector/MenuSelector.h>
+#include <Memory/Memory.h>
+#include <Settings/Settings.h>
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 MenuSelector selector(&lcd, 0, 4);
+Settings config;
 
 void setupFirstDate()
 {
-  Stamp date = selector.selectDateTime(Stamp(2024, 04, 23, 12, 15, 0));
+  config.firstTime = selector.selectDateTime(config.firstTime);
+  config.save();
   Serial.print("Date selected: ");
-  Serial.println(date.toString());
+  Serial.println(config.firstTime.toString());
 }
 
 void setupDuration()
 {
-  int number = selector.selectNumber(15, 0, 50);
+  config.duration = selector.selectNumber(config.duration, 0, 127);
+  config.save();
   Serial.print("Number selected: ");
-  Serial.println(number);
+  Serial.println(config.duration);
 }
 
 void setupYesNo()
 {
-  bool v = selector.selectBoolean(true);
+  config.answer = selector.selectBoolean(config.answer);
+  config.save();
   Serial.print("Selected: ");
-  Serial.println(v);
+  Serial.println(config.answer);
 }
 
 void setupTime()
@@ -43,6 +49,7 @@ void setup()
   lcd.begin(16, 2);
   Serial.begin(9600);
   pinMode(A0, INPUT_PULLUP);
+  config.load();
   selector.setMainMenu(menus);
   selector.showMainMenu();
 }
