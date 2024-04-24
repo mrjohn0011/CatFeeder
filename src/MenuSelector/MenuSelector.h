@@ -45,14 +45,15 @@ private:
     VirtButton selectButton;
     void next();
     void prev();
+    void clearSecondRow();
     void showName(String name);
     void showCurrentName();
 
 public:
     MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex);
-    Stamp setDateTime(Stamp defaultDateTime);
+    Stamp selectDateTime(Stamp defaultDateTime);
     void setMainMenu(Menu *menus);
-    int setNumber(int defaultNumber);
+    int selectNumber(int defaultNumber, int min, int max);
     void showMainMenu();
 };
 #endif

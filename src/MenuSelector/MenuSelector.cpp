@@ -55,6 +55,13 @@ void MenuSelector::showCurrentName()
     showName(mainMenu[selectedIndex].name);
 }
 
+void MenuSelector::clearSecondRow()
+{
+    lcd->setCursor(0, 1);
+    lcd->print("                ");
+    lcd->setCursor(0, 1);
+}
+
 void MenuSelector::showMainMenu()
 {
     showCurrentName();
@@ -76,14 +83,42 @@ void MenuSelector::showMainMenu()
     }
 }
 
-int MenuSelector::setNumber(int defaultNumber)
+int MenuSelector::selectNumber(int defaultNumber, int min, int max)
 {
-    lcd->clear();
     lcd->setCursor(0, 1);
+    lcd->print(defaultNumber);
+
+    while (true)
+    {
+        upButton.tick(buttons.status(UP_BUTTON));
+        downButton.tick(buttons.status(DOWN_BUTTON));
+        selectButton.tick(buttons.status(SELECT_BUTTON));
+
+        if ((upButton.click() || upButton.step()) && defaultNumber < max)
+        {
+            defaultNumber++;
+            clearSecondRow();
+            lcd->print(defaultNumber);
+        }
+
+        if ((downButton.click() || downButton.step()) && defaultNumber > min)
+        {
+            defaultNumber--;
+            clearSecondRow();
+            lcd->print(defaultNumber);
+        }
+
+        if (selectButton.click())
+        {
+            clearSecondRow();
+            return defaultNumber;
+        }
+    }
+
     return 0;
 }
 
-Stamp MenuSelector::setDateTime(Stamp defaultDateTime)
+Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
 {
     struct DateComponent
     {
@@ -154,8 +189,7 @@ Stamp MenuSelector::setDateTime(Stamp defaultDateTime)
         if (selectButton.click())
         {
             blinkTimer.stop();
-            lcd->setCursor(0, 1);
-            lcd->print("                ");
+            clearSecondRow();
             defaultDateTime.set(d);
             return defaultDateTime;
         }
