@@ -27,22 +27,18 @@ void MenuSelector::showName(String name)
 
 void MenuSelector::next()
 {
-    Serial.print("Next index: ");
     if (selectedIndex < maxIndex - 1)
     {
         selectedIndex++;
-        Serial.println(selectedIndex);
         showCurrentName();
     }
 }
 
 void MenuSelector::prev()
 {
-    Serial.print("Prev index: ");
     if (selectedIndex > 0)
     {
         selectedIndex--;
-        Serial.println(selectedIndex);
         showCurrentName();
     }
 }
@@ -50,8 +46,6 @@ void MenuSelector::prev()
 void MenuSelector::showCurrentName()
 {
     lcd->clear();
-    Serial.print("Name: ");
-    Serial.print(mainMenu[selectedIndex].name);
     showName(mainMenu[selectedIndex].name);
 }
 
@@ -206,6 +200,49 @@ Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
     }
 }
 
+Stamp MenuSelector::selectTime(Stamp defaultTime)
+{
+    Datime d = defaultTime.get();
+    uint8_t index = 0;
+    DateComponent dateParts[3] = {
+        {d.hour, 0, 2, 0, 23},
+        {d.minute, 3, 2, 0, 59},
+        {d.second, 6, 2, 0, 59}};
+
+    lcd->setCursor(0, 1);
+    lcd->print(d.timeToString());
+
+    while (true)
+    {
+        leftButton.tick(buttons.status(LEFT_BUTTON));
+        rightButton.tick(buttons.status(RIGHT_BUTTON));
+        selectButton.tick(buttons.status(SELECT_BUTTON));
+
+        if (buttons.pressed() == NO_BUTTON)
+        {
+            dateParts[index] = editDateComponent(dateParts[index]);
+        }
+
+        if (rightButton.click() && index < 2)
+        {
+            index++;
+        }
+
+        if (leftButton.click() && index > 0)
+        {
+            index--;
+        }
+
+        if (selectButton.click())
+        {
+            clearSecondRow();
+            d.set(dateParts[0].value, dateParts[1].value, dateParts[2].value);
+            defaultTime.set(d);
+            return defaultTime;
+        }
+    }
+}
+
 bool MenuSelector::selectBoolean(bool defaultValue)
 {
     lcd->setCursor(0, 1);
@@ -226,6 +263,7 @@ bool MenuSelector::selectBoolean(bool defaultValue)
 
         if (selectButton.click())
         {
+            clearSecondRow();
             return defaultValue;
         }
     }

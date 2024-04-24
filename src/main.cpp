@@ -1,7 +1,7 @@
 #include <MenuSelector/MenuSelector.h>
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-MenuSelector selector(&lcd, 0, 2);
+MenuSelector selector(&lcd, 0, 4);
 
 void setupFirstDate()
 {
@@ -17,9 +17,26 @@ void setupDuration()
   Serial.println(number);
 }
 
+void setupYesNo()
+{
+  bool v = selector.selectBoolean(true);
+  Serial.print("Selected: ");
+  Serial.println(v);
+}
+
+void setupTime()
+{
+  Stamp time = selector.selectTime(Stamp(12, 15, 0));
+  Serial.print("Selected: ");
+  Serial.println(time.timeToString());
+}
+
 Menu menus[] = {
     {"First date", setupFirstDate},
-    {"Duration", setupDuration}};
+    {"Duration", setupDuration},
+    {"Answer", setupYesNo},
+    {"Time", setupTime},
+};
 
 void setup()
 {

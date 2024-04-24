@@ -62,6 +62,7 @@ private:
 public:
     MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex);
     Stamp selectDateTime(Stamp defaultDateTime);
+    Stamp selectTime(Stamp defaultTime);
     int selectNumber(int defaultNumber, int min, int max);
     bool selectBoolean(bool defaultValue);
     void setMainMenu(Menu *menus);
