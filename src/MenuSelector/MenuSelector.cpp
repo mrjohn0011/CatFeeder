@@ -85,63 +85,31 @@ void MenuSelector::showMainMenu()
 
 int MenuSelector::selectNumber(int defaultNumber, int min, int max)
 {
-    lcd->setCursor(0, 1);
-    lcd->print(defaultNumber);
-
-    while (true)
-    {
-        upButton.tick(buttons.status(UP_BUTTON));
-        downButton.tick(buttons.status(DOWN_BUTTON));
-        selectButton.tick(buttons.status(SELECT_BUTTON));
-
-        if ((upButton.click() || upButton.step()) && defaultNumber < max)
-        {
-            defaultNumber++;
-            clearSecondRow();
-            lcd->print(defaultNumber);
-        }
-
-        if ((downButton.click() || downButton.step()) && defaultNumber > min)
-        {
-            defaultNumber--;
-            clearSecondRow();
-            lcd->print(defaultNumber);
-        }
-
-        if (selectButton.click())
-        {
-            clearSecondRow();
-            return defaultNumber;
-        }
-    }
-
-    return 0;
+    DateComponent cmp = {defaultNumber, 0, 16, min, max};
+    clearSecondRow();
+    return editDateComponent(cmp).value;
 }
 
-Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
+void MenuSelector::toggleDateComponent(DateComponent cmp, bool state)
 {
-    struct DateComponent
+    lcd->setCursor(cmp.position, 1);
+    if (state)
     {
-        uint16_t value;
-        uint8_t position;
-        uint8_t length;
-        uint16_t min;
-        uint16_t max;
-    };
+        if (cmp.value < 10)
+            lcd->print("0");
+        lcd->print(cmp.value);
+    }
+    else
+    {
+        for (uint8_t i = 0; i < cmp.length; i++)
+            lcd->print(" ");
+    }
+}
 
-    Datime d = defaultDateTime.get();
-    uint8_t index = 0;
-    DateComponent dateParts[5] = {
-        {d.day, 0, 2, 1, 31},
-        {d.month, 3, 2, 1, 12},
-        {d.year, 6, 4, 2024, 2105},
-        {d.hour, 11, 2, 0, 23},
-        {d.minute, 14, 2, 0, 59}};
-    TimerMs blinkTimer = TimerMs(300, true, false);
-
-    lcd->setCursor(0, 1);
-    lcd->print(d.toString());
-    bool showActivePart = true;
+MenuSelector::DateComponent MenuSelector::editDateComponent(DateComponent cmp)
+{
+    TimerMs blinkTimer = TimerMs(400, true, false);
+    bool componentBlinkState = true;
 
     while (true)
     {
@@ -151,72 +119,114 @@ Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
         rightButton.tick(buttons.status(RIGHT_BUTTON));
         selectButton.tick(buttons.status(SELECT_BUTTON));
 
-        if (rightButton.click() && index < 5)
-        {
-            lcd->setCursor(0, 1);
-            lcd->print(d.toString());
-            showActivePart = true;
-            index++;
-        }
-
-        if (leftButton.click() && index > 0)
-        {
-            lcd->setCursor(0, 1);
-            lcd->print(d.toString());
-            showActivePart = true;
-            index--;
-        }
-
-        if (upButton.click() || upButton.step())
-        {
-            if ((index == 0 && dateParts[index].value < StampUtils::daysInMonth(dateParts[1].value, dateParts[2].value)) ||
-                (index != 0 && dateParts[index].value < dateParts[index].max))
-            {
-                dateParts[index].value++;
-                d.set(dateParts[2].value, dateParts[1].value, dateParts[0].value, dateParts[3].value, dateParts[4].value, 0);
-            }
-        }
-
-        if (downButton.click() || downButton.step())
-        {
-            if (dateParts[index].value > dateParts[index].min)
-            {
-                dateParts[index].value--;
-                d.set(dateParts[2].value, dateParts[1].value, dateParts[0].value, dateParts[3].value, dateParts[4].value, 0);
-            }
-        }
-
-        if (selectButton.click())
+        if (rightButton.click() || leftButton.click() || selectButton.click())
         {
             blinkTimer.stop();
-            clearSecondRow();
-            defaultDateTime.set(d);
-            return defaultDateTime;
+            toggleDateComponent(cmp, true);
+            return cmp;
+        }
+
+        if ((upButton.click() || upButton.step()) && cmp.value < cmp.max)
+        {
+            cmp.value++;
+        }
+
+        if ((downButton.click() || downButton.step()) && cmp.value > cmp.min)
+        {
+            cmp.value--;
         }
 
         if (blinkTimer.tick())
         {
             if (!upButton.holding() && !downButton.holding())
             {
-                showActivePart = !showActivePart;
+                componentBlinkState = !componentBlinkState;
             }
             else
             {
-                showActivePart = true;
+                componentBlinkState = true;
             }
 
-            lcd->setCursor(dateParts[index].position, 1);
-            if (showActivePart)
+            toggleDateComponent(cmp, componentBlinkState);
+        }
+    }
+}
+
+Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
+{
+    Datime d = defaultDateTime.get();
+    uint8_t index = 0;
+    DateComponent dateParts[5] = {
+        {d.day, 0, 2, 1, StampUtils::daysInMonth(d.month, d.year)},
+        {d.month, 3, 2, 1, 12},
+        {d.year, 6, 4, 2024, 2105},
+        {d.hour, 11, 2, 0, 23},
+        {d.minute, 14, 2, 0, 59}};
+
+    lcd->setCursor(0, 1);
+    lcd->print(d.toString());
+
+    while (true)
+    {
+        leftButton.tick(buttons.status(LEFT_BUTTON));
+        rightButton.tick(buttons.status(RIGHT_BUTTON));
+        selectButton.tick(buttons.status(SELECT_BUTTON));
+
+        if (buttons.pressed() == NO_BUTTON)
+        {
+            dateParts[index] = editDateComponent(dateParts[index]);
+            if (index == 1 || index == 2)
             {
-                if (dateParts[index].value < 10)
-                    lcd->print("0");
-                lcd->print(dateParts[index].value);
+                dateParts[0].max = StampUtils::daysInMonth(dateParts[1].value, dateParts[2].value);
+                if (dateParts[0].value > dateParts[0].max)
+                {
+                    dateParts[0].value = dateParts[0].max;
+                    toggleDateComponent(dateParts[0], true);
+                }
             }
-            else
-            {
-                for (uint8_t i = 0; i < dateParts[index].length; i++)
-                    lcd->print(" ");
-            }
+        }
+
+        if (rightButton.click() && index < 5)
+        {
+            index++;
+        }
+
+        if (leftButton.click() && index > 0)
+        {
+            index--;
+        }
+
+        if (selectButton.click())
+        {
+            clearSecondRow();
+            d.set(dateParts[2].value, dateParts[1].value, dateParts[0].value, dateParts[3].value, dateParts[4].value, 0);
+            defaultDateTime.set(d);
+            return defaultDateTime;
+        }
+    }
+}
+
+bool MenuSelector::selectBoolean(bool defaultValue)
+{
+    lcd->setCursor(0, 1);
+    lcd->print(defaultValue ? "YES" : "NO");
+
+    while (true)
+    {
+        upButton.tick(buttons.status(UP_BUTTON));
+        downButton.tick(buttons.status(DOWN_BUTTON));
+        selectButton.tick(buttons.status(SELECT_BUTTON));
+
+        if (upButton.click() || downButton.click())
+        {
+            defaultValue = !defaultValue;
+            clearSecondRow();
+            lcd->print(defaultValue ? "YES" : "NO");
+        }
+
+        if (selectButton.click())
+        {
+            return defaultValue;
         }
     }
 }

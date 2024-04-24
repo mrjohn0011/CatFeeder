@@ -43,6 +43,16 @@ private:
     VirtButton leftButton;
     VirtButton rightButton;
     VirtButton selectButton;
+    struct DateComponent
+    {
+        int value;
+        uint8_t position;
+        uint8_t length;
+        int min;
+        int max;
+    };
+    void toggleDateComponent(DateComponent cmp, bool state);
+    DateComponent editDateComponent(DateComponent cmp);
     void next();
     void prev();
     void clearSecondRow();
@@ -52,8 +62,9 @@ private:
 public:
     MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex);
     Stamp selectDateTime(Stamp defaultDateTime);
-    void setMainMenu(Menu *menus);
     int selectNumber(int defaultNumber, int min, int max);
+    bool selectBoolean(bool defaultValue);
+    void setMainMenu(Menu *menus);
     void showMainMenu();
 };
 #endif
