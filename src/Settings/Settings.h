@@ -4,6 +4,13 @@
 #include <Memory/Memory.h>
 #include <Stamp.h>
 
+struct Portion
+{
+    Stamp startFrom;
+    uint8_t portion;
+    uint8_t interval;
+};
+
 class Settings
 {
 private:
