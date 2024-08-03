@@ -1,32 +1,23 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <Memory/Memory.h>
+#include <EEPROM.h>
 #include <Stamp.h>
-
-struct Portion
-{
-    Stamp startFrom;
-    uint8_t portion;
-    uint8_t interval;
-};
-
+#include <Portion/Portion.h>
 class Settings
 {
 private:
-    enum Addresses
+    int eepromAddress(int index)
     {
-        CONTROL_ADDR = 0,
-        FIRST_TIME_ADDR = 1,
-        DURATION_ADDR = 6,
-        ANSWER_ADDR = 7
-    };
-    Memory settings[3] = {Memory(FIRST_TIME_ADDR), Memory(DURATION_ADDR), Memory(ANSWER_ADDR)};
+        return sizeof(byte) + index * sizeof(Portion);
+    }
 
 public:
-    Stamp firstTime = Stamp(2024, 04, 24, 12, 15, 0);
-    byte duration = 0;
-    bool answer = false;
+    Portion portions[4] = {
+        Portion(Stamp(2024, 9, 1, 10, 30, 0), 0, 1),
+        Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1),
+        Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1),
+        Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1)};
 
     void load();
     void save();

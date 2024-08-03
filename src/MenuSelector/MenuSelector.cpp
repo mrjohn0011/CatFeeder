@@ -1,4 +1,5 @@
 #include "MenuSelector.h"
+#include <Settings/Settings.h>
 
 MenuSelector::MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex) : lcd(lcd), selectedIndex(selectedIndex), maxIndex(maxIndex)
 {
@@ -47,6 +48,8 @@ void MenuSelector::showCurrentName()
 {
     lcd->clear();
     showName(mainMenu[selectedIndex].name);
+    lcd->setCursor(0, 1);
+    lcd->print(mainMenu[selectedIndex].defaultValue);
 }
 
 void MenuSelector::clearSecondRow()
@@ -58,6 +61,7 @@ void MenuSelector::clearSecondRow()
 
 void MenuSelector::showMainMenu()
 {
+    this->selectedIndex = 0;
     showCurrentName();
 
     while (true)
@@ -90,7 +94,7 @@ void MenuSelector::toggleDateComponent(DateComponent cmp, bool state)
     lcd->setCursor(cmp.position, 1);
     if (state)
     {
-        if (cmp.value < 10)
+        if (cmp.max >= 10 && cmp.value < 10)
             lcd->print("0");
         lcd->print(cmp.value);
     }
@@ -269,3 +273,61 @@ bool MenuSelector::selectBoolean(bool defaultValue)
         }
     }
 }
+
+Portion MenuSelector::selectPortion(Portion defaultPortion)
+{
+    // 05.12 12:30 3 10
+    Datime d = defaultPortion.getStartFrom();
+    uint8_t index = 0;
+    DateComponent dateParts[6] = {
+        {d.day, 0, 2, 1, StampUtils::daysInMonth(d.month, d.year)},
+        {d.month, 3, 2, 1, 12},
+        {d.hour, 6, 2, 0, 23},
+        {d.minute, 9, 2, 0, 59},
+        {defaultPortion.getAmount(), 12, 1, 0, 9},
+        {defaultPortion.getInterval(), 14, 2, 1, 99}};
+
+    lcd->setCursor(0, 1);
+    lcd->print(defaultPortion.toString());
+
+    while (true)
+    {
+        leftButton.tick(buttons.status(LEFT_BUTTON));
+        rightButton.tick(buttons.status(RIGHT_BUTTON));
+        selectButton.tick(buttons.status(SELECT_BUTTON));
+
+        if (buttons.pressed() == NO_BUTTON)
+        {
+            dateParts[index] = editDateComponent(dateParts[index]);
+            if (index == 1 || index == 2)
+            {
+                dateParts[0].max = StampUtils::daysInMonth(dateParts[1].value, dateParts[2].value);
+                if (dateParts[0].value > dateParts[0].max)
+                {
+                    dateParts[0].value = dateParts[0].max;
+                    toggleDateComponent(dateParts[0], true);
+                }
+            }
+        }
+
+        if (rightButton.click() && index < 5)
+        {
+            index++;
+        }
+
+        if (leftButton.click() && index > 0)
+        {
+            index--;
+        }
+
+        if (selectButton.click())
+        {
+            clearSecondRow();
+            d.set(d.year, dateParts[1].value, dateParts[0].value, dateParts[2].value, dateParts[3].value, 0);
+            defaultPortion.setStartFrom(d);
+            defaultPortion.setAmount(dateParts[4].value);
+            defaultPortion.setInterval(dateParts[5].value);
+            return defaultPortion;
+        }
+    }
+};

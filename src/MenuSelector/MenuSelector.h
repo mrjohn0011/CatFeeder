@@ -8,6 +8,7 @@
 #include <TimerMs.h>
 #include <AnalogKey.h>
 #include <EncButton.h>
+#include <Portion/Portion.h>
 
 #define EB_DEB_TIME 20
 #define EB_CLICK_TIME 50
@@ -16,6 +17,7 @@ typedef void (*MenuHandler)();
 struct Menu
 {
     String name;
+    String defaultValue;
     MenuHandler handler;
 };
 
@@ -63,6 +65,7 @@ public:
     MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex);
     Stamp selectDateTime(Stamp defaultDateTime);
     Stamp selectTime(Stamp defaultTime);
+    Portion selectPortion(Portion defaultPortion);
     int selectNumber(int defaultNumber, int min, int max);
     bool selectBoolean(bool defaultValue);
     void setMainMenu(Menu *menus);

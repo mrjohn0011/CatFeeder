@@ -4,14 +4,14 @@
 #include <MicroDS3231.h>
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-MenuSelector selector(&lcd, 0, 4);
-Feeder feeder(200, 8, 9, 10, 11);
+MenuSelector selector(&lcd, 0, 3);
+Feeder feeder(200, 3, 11, 12, 13, 2);
 Settings config;
 MicroDS3231 rtc;
 
 void setupCurrentTime()
 {
-  Stamp nowTime = selector.selectDateTime(config.firstTime);
+  Stamp nowTime = selector.selectDateTime(Stamp(rtc.getYear(), rtc.getMonth(), rtc.getDate(), rtc.getHours(), rtc.getMinutes(), rtc.getSeconds()));
   Datime dt = nowTime.get();
   Serial.print("Setting new current time: ");
   Serial.println(nowTime.toString());
@@ -30,25 +30,6 @@ void setupFeedNow()
   feeder.feed(portionSize);
 }
 
-void setupYesNo()
-{
-  config.answer = selector.selectBoolean(config.answer);
-  config.save();
-  Serial.print("Selected: ");
-  Serial.println(config.answer);
-}
-
-void setupTime()
-{
-  Stamp time = selector.selectTime(Stamp(12, 15, 0));
-  Serial.print("Selected: ");
-  Serial.println(time.timeToString());
-}
-
-Menu menus[] = {
-    {"Feed now", setupFeedNow},
-    {"Set clock", setupCurrentTime}};
-
 void showError(String error)
 {
   lcd.clear();
@@ -58,11 +39,51 @@ void showError(String error)
   delay(1000);
 }
 
+void setupSchedules()
+{
+  Menu scheduleMenu[] = {
+      {"Schedule 1", config.portions[0].toString(), []()
+       {
+         config.portions[0] = selector.selectPortion(config.portions[0]);
+         Serial.print("Schedule 1 set to: ");
+         Serial.println(config.portions[0].toString());
+       }},
+      {"Schedule 2", config.portions[1].toString(), []()
+       {
+         config.portions[1] = selector.selectPortion(config.portions[1]);
+         Serial.print("Schedule 2 set to: ");
+         Serial.println(config.portions[1].toString());
+       }},
+      {"Schedule 3", config.portions[2].toString(), []()
+       {
+         config.portions[2] = selector.selectPortion(config.portions[2]);
+         Serial.print("Schedule 3 set to: ");
+         Serial.println(config.portions[2].toString());
+       }},
+      {"Schedule 4", config.portions[3].toString(), []()
+       {
+         config.portions[3] = selector.selectPortion(config.portions[3]);
+         Serial.print("Schedule 4 set to: ");
+         Serial.println(config.portions[3].toString());
+       }}};
+
+  MenuSelector scheduleSelector(&lcd, 0, 4);
+  scheduleSelector.setMainMenu(scheduleMenu);
+  scheduleSelector.showMainMenu();
+}
+
+Menu menus[] = {
+    {"Feed now", "1", setupFeedNow},
+    {"Set clock", "", setupCurrentTime},
+    {"Set schedules", "", setupSchedules},
+};
+
 void selfCheck()
 {
   Serial.println("Start self check...");
   if (!rtc.begin())
   {
+    menus[1].defaultValue = " Clock not found";
     showError("Clock not found");
   }
   else
@@ -77,6 +98,7 @@ void selfCheck()
   {
     showError("No clock battery");
     rtc.setTime(BUILD_SEC, BUILD_MIN, BUILD_HOUR, BUILD_DAY, BUILD_MONTH, BUILD_YEAR);
+    menus[1].defaultValue = " No battery";
   }
 }
 
@@ -85,6 +107,7 @@ void setup()
   lcd.begin(16, 2);
   Serial.begin(9600);
   pinMode(A0, INPUT_PULLUP);
+  selfCheck();
   config.load();
   selector.setMainMenu(menus);
   selector.showMainMenu();
@@ -92,4 +115,6 @@ void setup()
 
 void loop()
 {
+  selector.setMainMenu(menus);
+  selector.showMainMenu();
 }

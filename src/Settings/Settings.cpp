@@ -2,14 +2,16 @@
 
 void Settings::load()
 {
-    if (Memory(CONTROL_ADDR).readByte() == 1)
+    if (EEPROM.read(0) == 1)
     {
-        firstTime = Stamp(settings[0].readLong());
-        duration = settings[1].readByte();
-        answer = settings[2].readByte() == 0 ? false : true;
+        // When it is not the first run after the firmware update
+        Serial.print("Reading address ");
+        Serial.println(eepromAddress(0));
+        EEPROM.get(eepromAddress(0), portions);
     }
     else
     {
+        // When it is the first run, we should write default settings
         save();
     }
 }
@@ -17,8 +19,7 @@ void Settings::load()
 void Settings::save()
 {
     Serial.println("Saving settings");
-    Memory(CONTROL_ADDR).writeByte(1);
-    settings[0].writeLong(firstTime.getUnix());
-    settings[1].writeLong(duration);
-    settings[2].writeByte(answer ? 1 : 0);
+    Serial.print("Writing address ");
+    Serial.println(eepromAddress(0));
+    EEPROM.put(eepromAddress(0), portions);
 }
