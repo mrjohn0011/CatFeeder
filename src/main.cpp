@@ -47,24 +47,28 @@ void setupSchedules()
          config.portions[0] = selector.selectPortion(config.portions[0]);
          Serial.print("Schedule 1 set to: ");
          Serial.println(config.portions[0].toString());
+         config.save();
        }},
       {"Schedule 2", config.portions[1].toString(), []()
        {
          config.portions[1] = selector.selectPortion(config.portions[1]);
          Serial.print("Schedule 2 set to: ");
          Serial.println(config.portions[1].toString());
+         config.save();
        }},
       {"Schedule 3", config.portions[2].toString(), []()
        {
          config.portions[2] = selector.selectPortion(config.portions[2]);
          Serial.print("Schedule 3 set to: ");
          Serial.println(config.portions[2].toString());
+         config.save();
        }},
       {"Schedule 4", config.portions[3].toString(), []()
        {
          config.portions[3] = selector.selectPortion(config.portions[3]);
          Serial.print("Schedule 4 set to: ");
          Serial.println(config.portions[3].toString());
+         config.save();
        }}};
 
   MenuSelector scheduleSelector(&lcd, 0, 4);
