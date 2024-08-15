@@ -45,6 +45,7 @@ private:
     VirtButton leftButton;
     VirtButton rightButton;
     VirtButton selectButton;
+    TimerMs inactiveTimer;
     struct DateComponent
     {
         int value;
@@ -57,6 +58,7 @@ private:
     DateComponent editDateComponent(DateComponent cmp);
     void next();
     void prev();
+    void restartInactiveTimer(String message);
     void clearSecondRow();
     void showName(String name);
     void showCurrentName();
@@ -70,5 +72,6 @@ public:
     bool selectBoolean(bool defaultValue);
     void setMainMenu(Menu *menus);
     void showMainMenu();
+    void waitForSelect();
 };
 #endif

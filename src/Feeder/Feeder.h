@@ -2,20 +2,23 @@
 #define FEEDER_H
 
 #include <Arduino.h>
-#include <Stepper.h>
 
 class Feeder
 {
 public:
-    Feeder(int totalSteps, int pin1, int pin2, int pin3, int pin4, uint8_t mosfetPin);
+    Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin);
     void feed(int portions);
+    void setSpeed(int speed);
+    void setDirection(bool clockwise);
 
 private:
-    Stepper motor;
-    uint8_t mosfetPin = 2;
-    int speed = 30;
-    int totalSteps = 200;
-    int onePortionAngle = 90;
+    uint8_t stepPin = 3;
+    uint8_t dirPin = 2;
+    int speed = 800;
+    bool clockwise = true;
+    int stepsPerPortion = 50;
+
+    void feedPortion();
 };
 
 #endif

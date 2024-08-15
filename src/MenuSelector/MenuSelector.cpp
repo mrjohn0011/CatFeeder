@@ -9,6 +9,7 @@ MenuSelector::MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t ma
     buttons.attach(LEFT_BUTTON, 507);
     buttons.attach(SELECT_BUTTON, 741);
     buttons.setWindow(70);
+    inactiveTimer = TimerMs(10000, false, false);
 }
 
 void MenuSelector::setMainMenu(Menu *menus)
@@ -46,6 +47,8 @@ void MenuSelector::prev()
 
 void MenuSelector::showCurrentName()
 {
+    Serial.print("Show current name: ");
+    Serial.println(mainMenu[selectedIndex].name);
     lcd->clear();
     showName(mainMenu[selectedIndex].name);
     lcd->setCursor(0, 1);
@@ -59,16 +62,39 @@ void MenuSelector::clearSecondRow()
     lcd->setCursor(0, 1);
 }
 
+void MenuSelector::waitForSelect()
+{
+    selectButton.tick(buttons.status(SELECT_BUTTON));
+
+    if (selectButton.click())
+    {
+        showMainMenu();
+    }
+}
+
+void MenuSelector::restartInactiveTimer(String message)
+{
+    Serial.print("Clear inactive timer: ");
+    Serial.println(message);
+    inactiveTimer.restart();
+}
+
 void MenuSelector::showMainMenu()
 {
     this->selectedIndex = 0;
     showCurrentName();
+    inactiveTimer.start();
 
     while (true)
     {
         leftButton.tick(buttons.status(LEFT_BUTTON));
         rightButton.tick(buttons.status(RIGHT_BUTTON));
         selectButton.tick(buttons.status(SELECT_BUTTON));
+
+        if (buttons.pressed() != NO_BUTTON)
+        {
+            restartInactiveTimer("main menu");
+        }
 
         if (leftButton.click())
             prev();
@@ -78,6 +104,15 @@ void MenuSelector::showMainMenu()
 
         if (selectButton.click())
             mainMenu[selectedIndex].handler();
+
+        if (inactiveTimer.tick())
+        {
+            Serial.println("Inactive timer in main menu");
+            lcd->clear();
+            lcd->print("Press select");
+            inactiveTimer.stop();
+            return;
+        }
     }
 }
 
@@ -118,6 +153,11 @@ MenuSelector::DateComponent MenuSelector::editDateComponent(DateComponent cmp)
         rightButton.tick(buttons.status(RIGHT_BUTTON));
         selectButton.tick(buttons.status(SELECT_BUTTON));
 
+        if (buttons.pressed() != NO_BUTTON)
+        {
+            restartInactiveTimer("edit date component");
+        }
+
         if (rightButton.click() || leftButton.click() || selectButton.click())
         {
             blinkTimer.stop();
@@ -147,6 +187,12 @@ MenuSelector::DateComponent MenuSelector::editDateComponent(DateComponent cmp)
             }
 
             toggleDateComponent(cmp, componentBlinkState);
+        }
+
+        if (inactiveTimer.tick())
+        {
+            Serial.println("Inactive timer in edit date component");
+            return cmp;
         }
     }
 }
@@ -184,6 +230,10 @@ Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
                 }
             }
         }
+        else
+        {
+            restartInactiveTimer("select date time");
+        }
 
         if (rightButton.click() && index < 5)
         {
@@ -200,6 +250,12 @@ Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
             clearSecondRow();
             d.set(dateParts[2].value, dateParts[1].value, dateParts[0].value, dateParts[3].value, dateParts[4].value, 0);
             defaultDateTime.set(d);
+            return defaultDateTime;
+        }
+
+        if (inactiveTimer.tick())
+        {
+            Serial.println("Inactive timer in select date time");
             return defaultDateTime;
         }
     }
@@ -227,6 +283,10 @@ Stamp MenuSelector::selectTime(Stamp defaultTime)
         {
             dateParts[index] = editDateComponent(dateParts[index]);
         }
+        else
+        {
+            restartInactiveTimer("select time");
+        }
 
         if (rightButton.click() && index < 2)
         {
@@ -245,6 +305,12 @@ Stamp MenuSelector::selectTime(Stamp defaultTime)
             defaultTime.set(d);
             return defaultTime;
         }
+
+        if (inactiveTimer.tick())
+        {
+            Serial.println("Inactive timer in select time");
+            return defaultTime;
+        }
     }
 }
 
@@ -259,6 +325,11 @@ bool MenuSelector::selectBoolean(bool defaultValue)
         downButton.tick(buttons.status(DOWN_BUTTON));
         selectButton.tick(buttons.status(SELECT_BUTTON));
 
+        if (buttons.pressed() != NO_BUTTON)
+        {
+            restartInactiveTimer("select boolean");
+        }
+
         if (upButton.click() || downButton.click())
         {
             defaultValue = !defaultValue;
@@ -269,6 +340,12 @@ bool MenuSelector::selectBoolean(bool defaultValue)
         if (selectButton.click())
         {
             clearSecondRow();
+            return defaultValue;
+        }
+
+        if (inactiveTimer.tick())
+        {
+            Serial.println("Inactive timer in select boolean");
             return defaultValue;
         }
     }
@@ -309,6 +386,10 @@ Portion MenuSelector::selectPortion(Portion defaultPortion)
                 }
             }
         }
+        else
+        {
+            restartInactiveTimer("select portion");
+        }
 
         if (rightButton.click() && index < 5)
         {
@@ -327,6 +408,12 @@ Portion MenuSelector::selectPortion(Portion defaultPortion)
             defaultPortion.setStartFrom(d);
             defaultPortion.setAmount(dateParts[4].value);
             defaultPortion.setInterval(dateParts[5].value);
+            return defaultPortion;
+        }
+
+        if (inactiveTimer.tick())
+        {
+            Serial.println("Inactive timer in select portion");
             return defaultPortion;
         }
     }

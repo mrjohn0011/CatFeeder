@@ -2,6 +2,7 @@
 
 Portion::Portion(Stamp startFrom, uint8_t amount, uint8_t interval) : startFrom(startFrom), amount(amount), interval(interval)
 {
+    this->setLastFeed(Datime(0, 0, 0, 0, 0, 0));
 }
 
 String Portion::toString()
@@ -12,6 +13,52 @@ String Portion::toString()
              dt.day, dt.month, dt.hour, dt.minute, amount, interval);
 
     return String(buffer);
+}
+
+Datime Portion::getLastFeed()
+{
+    return lastFeed.get();
+}
+
+void Portion::setLastFeed(Datime lastFeed)
+{
+    this->lastFeed.set(lastFeed);
+}
+
+bool Portion::isTimeToFeed(Stamp currentTime)
+{
+    if (this->interval == 0)
+    {
+        return false;
+    }
+
+    Datime nowTime = currentTime.get();
+    Datime start = startFrom.get();
+    Datime last = lastFeed.get();
+
+    int daysFromLastFeeding = (nowTime.getUnix() - last.getUnix() / 86400);
+
+    if (daysFromLastFeeding < 1)
+    {
+        Serial.println("Already fed today");
+        return false;
+    }
+
+    int daysElapsed = (nowTime.getUnix() - start.getUnix() / 86400);
+
+    if (daysElapsed % interval != 0)
+    {
+        Serial.println("Too few days elapsed");
+        return false;
+    }
+
+    if (nowTime.hour == start.hour && nowTime.minute == start.minute)
+    {
+        return true;
+    }
+
+    Serial.println("Not time to feed");
+    return false;
 }
 
 void Portion::setAmount(uint8_t amount)

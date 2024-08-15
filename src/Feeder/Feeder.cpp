@@ -1,20 +1,41 @@
 #include "Feeder.h"
 
-Feeder::Feeder(int totalSteps, int pin1, int pin2, int pin3, int pin4, uint8_t mosfetPin) : totalSteps(totalSteps), motor(totalSteps, pin1, pin2, pin3, pin4, mosfetPin)
+Feeder::Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin) : stepsPerPortion(stepsPerPortion), stepPin(stepPin), dirPin(dirPin)
 {
-    motor.setSpeed(this->speed);
-    pinMode(mosfetPin, OUTPUT);
+    pinMode(stepPin, OUTPUT);
+    pinMode(dirPin, OUTPUT);
+}
+
+void Feeder::setSpeed(int speed)
+{
+    this->speed = speed;
+}
+
+void Feeder::setDirection(bool clockwise)
+{
+    this->clockwise = clockwise;
+}
+
+void Feeder::feedPortion()
+{
+    digitalWrite(dirPin, clockwise ? HIGH : LOW);
+    for (int i = 0; i < stepsPerPortion; i++)
+    {
+        digitalWrite(stepPin, HIGH);
+        delayMicroseconds(speed);
+        digitalWrite(stepPin, LOW);
+        delayMicroseconds(speed);
+    }
+    delay(1000);
 }
 
 void Feeder::feed(int portions)
 {
     if (portions > 0)
     {
-        digitalWrite(this->mosfetPin, HIGH);
         for (int i = 0; i < portions; i++)
         {
-            motor.step(this->totalSteps * this->onePortionAngle / 360);
+            feedPortion();
         }
-        digitalWrite(this->mosfetPin, LOW);
     }
 }
