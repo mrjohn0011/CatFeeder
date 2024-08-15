@@ -24,9 +24,18 @@ void Settings::load()
     }
 }
 
+void Settings::reset()
+{
+    for (int i = 0; i < portionCount; ++i)
+    {
+        portions[i] = Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1);
+    }
+    save();
+}
+
 void Settings::save()
 {
-    Serial.print("Writing first byte");
+    Serial.println("Writing first byte");
     EEPROM.write(0, 1);
     int address = eepromAddress(0);
     Serial.println("Saving settings");

@@ -23,6 +23,7 @@ public:
         Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1)};
 
     void load();
+    void reset();
     void save();
 };
 

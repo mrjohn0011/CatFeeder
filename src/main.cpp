@@ -7,7 +7,7 @@
 #define SCHEDULE_COUNT 4
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-MenuSelector selector(&lcd, 0, MENU_COUNT + SCHEDULE_COUNT);
+MenuSelector selector(&lcd, 0, MENU_COUNT + SCHEDULE_COUNT + 1);
 
 Feeder feeder(50, 3, 2);
 TimerMs feederTimer(20000, true, false);
@@ -48,6 +48,7 @@ void scheduleSetter(uint8_t i)
 {
   config.portions[i] = selector.selectPortion(config.portions[i]);
   Serial.print("Schedule " + String(i + 1) + " set to: ");
+  Serial.println(config.portions[i].toString());
   config.save();
 }
 
@@ -69,6 +70,15 @@ Menu menus[] = {
     {"Schedule 4", config.portions[3].toString(), []()
      {
        scheduleSetter(3);
+     }},
+    {"Factory Reset", "NO", []()
+     {
+       bool confirm = selector.selectBoolean(false);
+       if (confirm)
+       {
+         config.reset();
+         Serial.println("Factory reset done");
+       }
      }}};
 
 bool checkRTC()
