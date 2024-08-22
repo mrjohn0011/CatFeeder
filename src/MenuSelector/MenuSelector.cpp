@@ -74,8 +74,8 @@ void MenuSelector::waitForSelect()
 
 void MenuSelector::restartInactiveTimer(String message)
 {
-    Serial.print("Clear inactive timer: ");
-    Serial.println(message);
+    // Serial.print("Clear inactive timer: ");
+    // Serial.println(message);
     inactiveTimer.restart();
 }
 

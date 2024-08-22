@@ -13,6 +13,10 @@ void Settings::load()
         {
             EEPROM.get(address, portions[i]);
             address += portionSize;
+            Serial.print("Loaded portion ");
+            Serial.print(i);
+            Serial.print(": ");
+            Serial.println(portions[i].toString());
         }
     }
     else

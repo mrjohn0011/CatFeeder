@@ -7,7 +7,7 @@
 #define SCHEDULE_COUNT 4
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
-MenuSelector selector(&lcd, 0, MENU_COUNT + SCHEDULE_COUNT + 1);
+MenuSelector selector(&lcd, 0, MENU_COUNT + SCHEDULE_COUNT);
 
 Feeder feeder(50, 3, 2);
 TimerMs feederTimer(20000, true, false);
@@ -44,42 +44,30 @@ void showError(String error)
   delay(1000);
 }
 
+Menu menus[MENU_COUNT + SCHEDULE_COUNT];
+
 void scheduleSetter(uint8_t i)
 {
   config.portions[i] = selector.selectPortion(config.portions[i]);
   Serial.print("Schedule " + String(i + 1) + " set to: ");
   Serial.println(config.portions[i].toString());
   config.save();
+  menus[i + 2].defaultValue = config.portions[i].toString();
 }
 
-Menu menus[] = {
-    {"Feed now", "1", setupFeedNow},
-    {"Set clock", "", setupCurrentTime},
-    {"Schedule 1", config.portions[0].toString(), []()
-     {
-       scheduleSetter(0);
-     }},
-    {"Schedule 2", config.portions[1].toString(), []()
-     {
-       scheduleSetter(1);
-     }},
-    {"Schedule 3", config.portions[2].toString(), []()
-     {
-       scheduleSetter(2);
-     }},
-    {"Schedule 4", config.portions[3].toString(), []()
-     {
-       scheduleSetter(3);
-     }},
-    {"Factory Reset", "NO", []()
-     {
-       bool confirm = selector.selectBoolean(false);
-       if (confirm)
-       {
-         config.reset();
-         Serial.println("Factory reset done");
-       }
-     }}};
+void initMenus()
+{
+  menus[0] = {"Feed now", "1", setupFeedNow};
+  menus[1] = {"Set clock", "", setupCurrentTime};
+  menus[2] = {"Schedule 1", config.portions[0].toString(), []()
+              { scheduleSetter(0); }};
+  menus[3] = {"Schedule 2", config.portions[1].toString(), []()
+              { scheduleSetter(1); }};
+  menus[4] = {"Schedule 3", config.portions[2].toString(), []()
+              { scheduleSetter(2); }};
+  menus[5] = {"Schedule 4", config.portions[3].toString(), []()
+              { scheduleSetter(3); }};
+}
 
 bool checkRTC()
 {
@@ -130,6 +118,8 @@ void setup()
   pinMode(A0, INPUT_PULLUP);
   selfCheck();
   config.load();
+  initMenus();
+
   selector.setMainMenu(menus);
   feederTimer.start();
   lcd.clear();
