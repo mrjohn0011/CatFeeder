@@ -16,7 +16,9 @@ void Settings::load()
             Serial.print("Loaded portion ");
             Serial.print(i);
             Serial.print(": ");
-            Serial.println(portions[i].toString());
+            Serial.print(portions[i].toString());
+            Serial.print(" Last feed: ");
+            Serial.println(portions[i].getLastFeed().toString());
         }
     }
     else

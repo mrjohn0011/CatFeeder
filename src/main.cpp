@@ -111,6 +111,38 @@ void selfCheck()
   }
 }
 
+void regularScheduleCheck()
+{
+  Serial.println("Regular schedule checking...");
+  if (checkRTC())
+  {
+    uint16_t currentYear = rtc.getYear();
+    uint8_t currentMonth = rtc.getMonth();
+    uint8_t currentDay = rtc.getDate();
+    uint8_t currentHour = rtc.getHours();
+    uint8_t currentMinute = rtc.getMinutes();
+    bool needSave = false;
+
+    for (int i = 0; i < SCHEDULE_COUNT; i++)
+    {
+      if (config.portions[i].isTimeToFeed(Stamp(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0)))
+      {
+        feeder.feed(config.portions[i].getAmount());
+        config.portions[i].setLastFeed(Datime(currentYear, currentMonth, currentDay, currentHour, currentMinute, 0));
+        Serial.print("Schedule " + String(i + 1) + " fed: ");
+        Serial.println(config.portions[i].getAmount());
+        needSave = true;
+        break;
+      }
+    }
+
+    if (needSave)
+    {
+      config.save();
+    }
+  }
+}
+
 void setup()
 {
   lcd.begin(16, 2);
@@ -130,21 +162,7 @@ void loop()
 {
   if (feederTimer.tick())
   {
-    Serial.println("Regular schedule checking...");
-    if (checkRTC())
-    {
-      for (int i = 0; i < SCHEDULE_COUNT; i++)
-      {
-        if (config.portions[i].isTimeToFeed(Stamp(rtc.getYear(), rtc.getMonth(), rtc.getDate(), rtc.getHours(), rtc.getMinutes(), 0)))
-        {
-          feeder.feed(config.portions[i].getAmount());
-          config.portions[i].setLastFeed(Datime(rtc.getYear(), rtc.getMonth(), rtc.getDate(), rtc.getHours(), rtc.getMinutes(), 0));
-          Serial.print("Schedule " + String(i + 1) + " fed: ");
-          Serial.println(config.portions[i].getAmount());
-          break;
-        }
-      }
-    }
+    regularScheduleCheck();
   }
 
   selector.waitForSelect();

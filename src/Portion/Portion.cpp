@@ -29,6 +29,7 @@ bool Portion::isTimeToFeed(Stamp currentTime)
 {
     if (this->interval == 0)
     {
+        Serial.println("Interval is 0");
         return false;
     }
 
@@ -36,19 +37,21 @@ bool Portion::isTimeToFeed(Stamp currentTime)
     Datime start = startFrom.get();
     Datime last = lastFeed.get();
 
-    int daysFromLastFeeding = (nowTime.getUnix() - last.getUnix() / 86400);
+    int daysFromLastFeeding = (nowTime.getUnix() - last.getUnix()) / 86400;
 
-    if (daysFromLastFeeding < 1)
+    if (daysFromLastFeeding == 0)
     {
-        Serial.println("Already fed today");
+        Serial.println("0 days from last feeding");
         return false;
     }
 
-    int daysElapsed = (nowTime.getUnix() - start.getUnix() / 86400);
+    int daysElapsed = (nowTime.getUnix() - start.getUnix()) / 86400;
 
     if (daysElapsed % interval != 0)
     {
-        Serial.println("Too few days elapsed");
+        Serial.print("Days elapsed: ");
+        Serial.print(daysElapsed);
+        Serial.println(" - Too few days elapsed");
         return false;
     }
 
