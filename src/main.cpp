@@ -9,7 +9,7 @@
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 MenuSelector selector(&lcd, 0, MENU_COUNT + SCHEDULE_COUNT);
 
-Feeder feeder(50, 3, 2);
+Feeder feeder(50, 3, 2, 12);
 TimerMs feederTimer(20000, true, false);
 Settings config;
 MicroDS3231 rtc;

@@ -1,9 +1,11 @@
 #include "Feeder.h"
 
-Feeder::Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin) : stepsPerPortion(stepsPerPortion), stepPin(stepPin), dirPin(dirPin)
+Feeder::Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin, uint8_t enable_pin) : stepsPerPortion(stepsPerPortion), stepPin(stepPin), dirPin(dirPin), enable_pin(enable_pin)
 {
     pinMode(stepPin, OUTPUT);
     pinMode(dirPin, OUTPUT);
+    pinMode(enable_pin, OUTPUT);
+    digitalWrite(enable_pin, HIGH);
 }
 
 void Feeder::setSpeed(int speed)
@@ -26,16 +28,18 @@ void Feeder::feedPortion()
         digitalWrite(stepPin, LOW);
         delayMicroseconds(speed);
     }
-    delay(1000);
+    delay(500);
 }
 
 void Feeder::feed(int portions)
 {
     if (portions > 0)
     {
+        digitalWrite(enable_pin, LOW);
         for (int i = 0; i < portions; i++)
         {
             feedPortion();
         }
+        digitalWrite(enable_pin, HIGH);
     }
 }

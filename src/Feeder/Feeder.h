@@ -6,7 +6,7 @@
 class Feeder
 {
 public:
-    Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin);
+    Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin, uint8_t enable_pin);
     void feed(int portions);
     void setSpeed(int speed);
     void setDirection(bool clockwise);
@@ -14,6 +14,7 @@ public:
 private:
     uint8_t stepPin = 3;
     uint8_t dirPin = 2;
+    uint8_t enable_pin = 12;
     int speed = 800;
     bool clockwise = true;
     int stepsPerPortion = 50;
