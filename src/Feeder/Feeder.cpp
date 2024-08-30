@@ -8,9 +8,11 @@ Feeder::Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin, uint8_t ena
     digitalWrite(enable_pin, HIGH);
 }
 
-void Feeder::setSpeed(int speed)
+void Feeder::setSpeed(uint8_t speedLevel)
 {
-    this->speed = speed;
+    this->speed = 400 * (11 - speedLevel);
+    Serial.print("Speed delay set to: ");
+    Serial.println(this->speed);
 }
 
 void Feeder::setDirection(bool clockwise)

@@ -3,7 +3,7 @@
 #include <Feeder/Feeder.h>
 #include <MicroDS3231.h>
 
-#define MENU_COUNT 2
+#define MENU_COUNT 3
 #define SCHEDULE_COUNT 4
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -46,6 +46,16 @@ void showError(String error)
 
 Menu menus[MENU_COUNT + SCHEDULE_COUNT];
 
+void setupSpeed()
+{
+  int speed = selector.selectNumber(5, 1, 10);
+  feeder.setSpeed(speed);
+  config.save();
+  menus[6].defaultValue = String(speed);
+  Serial.print("Speed value set to: ");
+  Serial.println(speed);
+}
+
 void scheduleSetter(uint8_t i)
 {
   config.portions[i] = selector.selectPortion(config.portions[i]);
@@ -67,6 +77,7 @@ void initMenus()
               { scheduleSetter(2); }};
   menus[5] = {"Schedule 4", config.portions[3].toString(), []()
               { scheduleSetter(3); }};
+  menus[6] = {"Motor speed", String(config.speed), setupSpeed};
 }
 
 bool checkRTC()
