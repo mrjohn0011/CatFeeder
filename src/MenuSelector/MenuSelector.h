@@ -72,6 +72,6 @@ public:
     bool selectBoolean(bool defaultValue);
     void setMainMenu(Menu *menus);
     void showMainMenu();
-    void waitForSelect();
+    bool showMainMenuOnSelect();
 };
 #endif

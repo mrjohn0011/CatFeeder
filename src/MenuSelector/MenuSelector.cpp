@@ -1,5 +1,4 @@
 #include "MenuSelector.h"
-#include <Settings/Settings.h>
 
 MenuSelector::MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex) : lcd(lcd), selectedIndex(selectedIndex), maxIndex(maxIndex)
 {
@@ -62,14 +61,17 @@ void MenuSelector::clearSecondRow()
     lcd->setCursor(0, 1);
 }
 
-void MenuSelector::waitForSelect()
+bool MenuSelector::showMainMenuOnSelect()
 {
     selectButton.tick(buttons.status(SELECT_BUTTON));
 
     if (selectButton.click())
     {
         showMainMenu();
+        return true;
     }
+
+    return false;
 }
 
 void MenuSelector::restartInactiveTimer(String message)
@@ -108,8 +110,6 @@ void MenuSelector::showMainMenu()
         if (inactiveTimer.tick())
         {
             Serial.println("Inactive timer in main menu");
-            lcd->clear();
-            lcd->print("Press select");
             inactiveTimer.stop();
             return;
         }

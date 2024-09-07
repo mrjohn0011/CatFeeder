@@ -20,6 +20,15 @@ Datime Portion::getLastFeed()
     return lastFeed.get();
 }
 
+Datime Portion::getNextFeed(Stamp currentTime)
+{
+    uint32_t daysElapsed = (currentTime.get().getUnix() - startFrom.get().getUnix()) / 86400;
+    uint32_t daysToNext = interval - (daysElapsed % interval);
+    Datime nextFeed = Datime(startFrom.getUnix());
+    nextFeed.addDays(daysToNext);
+    return nextFeed;
+}
+
 void Portion::setLastFeed(Datime lastFeed)
 {
     this->lastFeed.set(lastFeed);

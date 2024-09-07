@@ -1,6 +1,6 @@
 #include "Feeder.h"
 
-Feeder::Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin, uint8_t enable_pin) : stepsPerPortion(stepsPerPortion), stepPin(stepPin), dirPin(dirPin), enable_pin(enable_pin)
+Feeder::Feeder(uint8_t stepPin, uint8_t dirPin, uint8_t enable_pin) : stepPin(stepPin), dirPin(dirPin), enable_pin(enable_pin)
 {
     pinMode(stepPin, OUTPUT);
     pinMode(dirPin, OUTPUT);
@@ -8,11 +8,18 @@ Feeder::Feeder(int stepsPerPortion, uint8_t stepPin, uint8_t dirPin, uint8_t ena
     digitalWrite(enable_pin, HIGH);
 }
 
-void Feeder::setSpeed(uint8_t speedLevel)
+void Feeder::setSpeed(uint8_t s)
 {
-    this->speed = 400 * (11 - speedLevel);
-    Serial.print("Speed delay set to: ");
+    this->speed = s;
+    Serial.print("Speed set to: ");
     Serial.println(this->speed);
+}
+
+void Feeder::setPortionSize(uint8_t ps)
+{
+    this->portionSize = ps;
+    Serial.print("Portion size set to: ");
+    Serial.println(this->portionSize);
 }
 
 void Feeder::setDirection(bool clockwise)
@@ -23,12 +30,18 @@ void Feeder::setDirection(bool clockwise)
 void Feeder::feedPortion()
 {
     digitalWrite(dirPin, clockwise ? HIGH : LOW);
-    for (int i = 0; i < stepsPerPortion; i++)
+    int speedDelay = 400 * (11 - speed);
+    int totalSteps = 50 * portionSize;
+    Serial.print("Speed delay:");
+    Serial.println(speedDelay);
+    Serial.print("Total steps:");
+    Serial.println(totalSteps);
+    for (int i = 0; i < totalSteps; i++)
     {
         digitalWrite(stepPin, HIGH);
-        delayMicroseconds(speed);
+        delayMicroseconds(speedDelay);
         digitalWrite(stepPin, LOW);
-        delayMicroseconds(speed);
+        delayMicroseconds(speedDelay);
     }
     delay(500);
 }

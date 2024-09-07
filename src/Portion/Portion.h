@@ -19,6 +19,7 @@ public:
     void setLastFeed(Datime lastFeed);
     bool isTimeToFeed(Stamp currentTime);
     Datime getStartFrom();
+    Datime getNextFeed(Stamp currentTime);
     uint8_t getAmount();
     uint8_t getInterval();
     Datime getLastFeed();
