@@ -1,43 +1,37 @@
 #include "Settings.h"
+#define LOGGING false
 
 void Settings::load()
 {
-    byte version = EEPROM.read(0);
+    byte version = EEPROM.read(eepromStartAddress);
+#if LOGGING
+    Serial.println("Loading version: " + String(version));
+#endif
     if (version == actualVersion)
     {
-        // When it is not the first run after the firmware update
-        int address = eepromAddress(0);
+        uint32_t address = eepromAddress(0);
+#if LOGGING
         Serial.print("Reading address ");
         Serial.println(address);
-        for (int i = 0; i < schedulesCount; ++i)
+#endif
+
+        for (int i = 0; i < schedulesCount; i++)
         {
             EEPROM.get(address, portions[i]);
             address = eepromAddress(i + 1);
-            Serial.print("Loaded portion ");
-            Serial.print(i);
-            Serial.print(": ");
+#if LOGGING
+            Serial.print("Loaded portion " + String(i) + ": ");
             Serial.print(portions[i].toString());
-            Serial.print(" Last feed: ");
+            Serial.print("; Last feed: ");
             Serial.println(portions[i].getLastFeed().toString());
+#endif
         }
-        address += sizeof(byte);
-        speed = EEPROM.read(address);
-        Serial.print("Loaded speed: ");
-        Serial.println(speed);
 
-        address += sizeof(byte);
-        portionSize = EEPROM.read(address);
-        Serial.print("Loaded portion size: ");
-        Serial.println(portionSize);
-    }
-    else
-    {
-        // When version is not correct
-        Serial.print("Reseting because config is outdated. Version is: ");
-        Serial.println(version);
-        Serial.print("Expected version is: ");
-        Serial.println(actualVersion);
-        reset();
+        EEPROM.get(address + 1, speed);
+        Serial.println("Loaded speed: " + String(speed));
+
+        EEPROM.get(address + 2, portionSize);
+        Serial.println("Loaded portion size: " + String(portionSize));
     }
 }
 
@@ -49,29 +43,27 @@ void Settings::reset()
     {
         portions[i] = Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1);
     }
-    save();
 }
 
 void Settings::save()
 {
-    Serial.println("Writing version");
-    EEPROM.write(0, actualVersion);
+    EEPROM.write(eepromStartAddress, actualVersion);
     int address = eepromAddress(0);
+#if LOGGING
     Serial.println("Saving settings");
     Serial.print("Writing address ");
     Serial.println(address);
+#endif
 
-    for (int i = 0; i < schedulesCount; ++i)
+    for (int i = 0; i < schedulesCount; i++)
     {
         EEPROM.put(address, portions[i]);
-        address += portionObjectSize;
+        address = eepromAddress(i + 1);
     }
 
-    address += 1;
-    EEPROM.put(address, speed);
-
-    address += 1;
-    EEPROM.put(address, portionSize);
+    EEPROM.put(address + 1, speed);
+    EEPROM.put(address + 2, portionSize);
+    Serial.println("Saved speed: " + String(speed));
 }
 
 Datime Settings::getNextFeed(Stamp currentTime)

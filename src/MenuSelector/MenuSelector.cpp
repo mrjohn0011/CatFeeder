@@ -1,4 +1,5 @@
 #include "MenuSelector.h"
+#define LOGGING false
 
 MenuSelector::MenuSelector(LiquidCrystal *lcd, uint8_t selectedIndex, uint8_t maxIndex) : lcd(lcd), selectedIndex(selectedIndex), maxIndex(maxIndex)
 {
@@ -46,8 +47,10 @@ void MenuSelector::prev()
 
 void MenuSelector::showCurrentName()
 {
+#if LOGGING
     Serial.print("Show current name: ");
     Serial.println(mainMenu[selectedIndex].name);
+#endif
     lcd->clear();
     showName(mainMenu[selectedIndex].name);
     lcd->setCursor(0, 1);
@@ -109,7 +112,9 @@ void MenuSelector::showMainMenu()
 
         if (inactiveTimer.tick())
         {
+#if LOGGING
             Serial.println("Inactive timer in main menu");
+#endif
             inactiveTimer.stop();
             return;
         }
@@ -191,7 +196,9 @@ MenuSelector::DateComponent MenuSelector::editDateComponent(DateComponent cmp)
 
         if (inactiveTimer.tick())
         {
+#if LOGGING
             Serial.println("Inactive timer in edit date component");
+#endif
             return cmp;
         }
     }
@@ -255,7 +262,9 @@ Stamp MenuSelector::selectDateTime(Stamp defaultDateTime)
 
         if (inactiveTimer.tick())
         {
+#if LOGGING
             Serial.println("Inactive timer in select date time");
+#endif
             return defaultDateTime;
         }
     }
@@ -308,7 +317,9 @@ Stamp MenuSelector::selectTime(Stamp defaultTime)
 
         if (inactiveTimer.tick())
         {
+#if LOGGING
             Serial.println("Inactive timer in select time");
+#endif
             return defaultTime;
         }
     }
@@ -345,7 +356,9 @@ bool MenuSelector::selectBoolean(bool defaultValue)
 
         if (inactiveTimer.tick())
         {
+#if LOGGING
             Serial.println("Inactive timer in select boolean");
+#endif
             return defaultValue;
         }
     }
@@ -413,7 +426,9 @@ Portion MenuSelector::selectPortion(Portion defaultPortion)
 
         if (inactiveTimer.tick())
         {
+#if LOGGING
             Serial.println("Inactive timer in select portion");
+#endif
             return defaultPortion;
         }
     }

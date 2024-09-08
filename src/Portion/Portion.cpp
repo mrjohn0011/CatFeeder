@@ -1,4 +1,5 @@
 #include "Portion.h"
+#define LOGGING false
 
 Portion::Portion(Stamp startFrom, uint8_t amount, uint8_t interval) : startFrom(startFrom), amount(amount), interval(interval)
 {
@@ -38,7 +39,9 @@ bool Portion::isTimeToFeed(Stamp currentTime)
 {
     if (this->interval == 0)
     {
+#if LOGGING
         Serial.println("Interval is 0");
+#endif
         return false;
     }
 
@@ -50,7 +53,9 @@ bool Portion::isTimeToFeed(Stamp currentTime)
 
     if (daysFromLastFeeding == 0)
     {
+#if LOGGING
         Serial.println("0 days from last feeding");
+#endif
         return false;
     }
 
@@ -58,9 +63,11 @@ bool Portion::isTimeToFeed(Stamp currentTime)
 
     if (daysElapsed % interval != 0)
     {
+#if LOGGING
         Serial.print("Days elapsed: ");
         Serial.print(daysElapsed);
         Serial.println(" - Too few days elapsed");
+#endif
         return false;
     }
 
@@ -69,7 +76,9 @@ bool Portion::isTimeToFeed(Stamp currentTime)
         return true;
     }
 
+#if LOGGING
     Serial.println("Not time to feed");
+#endif
     return false;
 }
 

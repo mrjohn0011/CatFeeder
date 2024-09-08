@@ -7,13 +7,13 @@
 class Settings
 {
 private:
-    static const byte actualVersion = 2;
-    static const int eepromStartAddress = 0;
-    static const int schedulesCount = 4;
-    static const int portionObjectSize = sizeof(Portion);
-    int eepromAddress(int index)
+    static const byte actualVersion = 1;
+    static const uint32_t eepromStartAddress = 0;
+    static const uint8_t schedulesCount = 4;
+    static const uint32_t portionObjectSize = sizeof(Portion);
+    uint32_t eepromAddress(int index)
     {
-        return sizeof(byte) + index * sizeof(Portion);
+        return eepromStartAddress + sizeof(byte) + index * sizeof(Portion);
     }
 
 public:

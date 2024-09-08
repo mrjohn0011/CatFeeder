@@ -5,7 +5,8 @@
 
 #define MENU_COUNT 4
 #define SCHEDULE_COUNT 4
-#define USE_REAL_RTC false
+#define USE_REAL_RTC true
+#define LOGGING true
 
 #define FAKE_RTC_YEAR 2024
 #define FAKE_RTC_MONTH 9
@@ -32,23 +33,29 @@ void setupCurrentTime()
   Stamp nowTime = selector.selectDateTime(Stamp(FAKE_RTC_YEAR, FAKE_RTC_MONTH, FAKE_RTC_DAY, FAKE_RTC_HOUR, FAKE_RTC_MIN, FAKE_RTC_SEC));
 #endif
   Datime dt = nowTime.get();
+#if LOGGING
   Serial.print("Setting new current time: ");
   Serial.println(nowTime.toString());
+#endif
 #if USE_REAL_RTC
   rtc.setTime(dt.second, dt.minute, dt.hour, dt.day, dt.month, dt.year);
+#if LOGGING
   Serial.print("Clock updated to: ");
   Serial.print(rtc.getDateString());
   Serial.print(" ");
   Serial.println(rtc.getTimeString());
+#endif
 #endif
 }
 
 void setupFeedNow()
 {
   int portionSize = selector.selectNumber(1, 0, 40);
+#if LOGGING
   Serial.print("Manual feed selected: ");
   Serial.println(portionSize);
   feeder.feed(portionSize);
+#endif
 }
 
 void showError(String error)
@@ -56,7 +63,9 @@ void showError(String error)
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(error);
+#if LOGGING
   Serial.println(error);
+#endif
   delay(1000);
 }
 
@@ -64,29 +73,35 @@ Menu menus[MENU_COUNT + SCHEDULE_COUNT];
 
 void setupSpeed()
 {
-  int speed = selector.selectNumber(config.speed, 1, 10);
-  feeder.setSpeed(speed);
+  config.speed = selector.selectNumber(config.speed, 1, 10);
+  feeder.setSpeed(config.speed);
   config.save();
-  menus[6].defaultValue = String(speed);
+  menus[6].defaultValue = String(config.speed);
+#if LOGGING
   Serial.print("Speed value set to: ");
-  Serial.println(speed);
+  Serial.println(config.speed);
+#endif
 }
 
 void setupPortionSize()
 {
-  int portionSize = selector.selectNumber(config.portionSize, 1, 16);
-  feeder.setPortionSize(portionSize);
+  config.portionSize = selector.selectNumber(config.portionSize, 1, 16);
+  feeder.setPortionSize(config.portionSize);
   config.save();
-  menus[7].defaultValue = String(portionSize);
+  menus[7].defaultValue = String(config.portionSize);
+#if LOGGING
   Serial.print("Portion size: ");
-  Serial.println(portionSize);
+  Serial.println(config.portionSize);
+#endif
 }
 
 void scheduleSetter(uint8_t i)
 {
   config.portions[i] = selector.selectPortion(config.portions[i]);
+#if LOGGING
   Serial.print("Schedule " + String(i + 1) + " set to: ");
   Serial.println(config.portions[i].toString());
+#endif
   config.save();
   menus[i + 2].defaultValue = config.portions[i].toString();
 }
@@ -129,7 +144,9 @@ bool checkRTC()
 void selfCheck()
 {
 #if USE_REAL_RTC
+#if LOGGING
   Serial.println("Start self check...");
+#endif
   if (!rtc.begin())
   {
     menus[1].defaultValue = " Clock not found";
@@ -137,10 +154,12 @@ void selfCheck()
   }
   else
   {
+#if LOGGING
     Serial.print("Clock checked: ");
     Serial.print(rtc.getDateString());
     Serial.print(" ");
     Serial.println(rtc.getTimeString());
+#endif
   }
 
   if (rtc.lostPower())
@@ -150,12 +169,16 @@ void selfCheck()
     menus[1].defaultValue = " No battery";
   }
 #endif
+#if LOGGING
   Serial.println("Self check done");
+#endif
 }
 
 void regularScheduleCheck()
 {
+#if LOGGING
   Serial.println("Regular schedule checking...");
+#endif
   if (checkRTC())
   {
 #if USE_REAL_RTC
@@ -171,8 +194,10 @@ void regularScheduleCheck()
       {
         feeder.feed(config.portions[i].getAmount());
         config.portions[i].setLastFeed(nowTime.get());
+#if LOGGING
         Serial.print("Schedule " + String(i + 1) + " fed: ");
         Serial.println(config.portions[i].getAmount());
+#endif
         needSave = true;
         break;
       }
@@ -202,26 +227,33 @@ void showNextFeedTime()
     lcd.setCursor(0, 1);
     Datime nextFeedTime = config.getNextFeed(nowTime);
     lcd.print(nextFeedTime.day + String(".") + String(nextFeedTime.month) + String(".") + String(nextFeedTime.year) + String(" ") + String(nextFeedTime.hour) + String(":") + String(nextFeedTime.minute));
+#if LOGGING
     Serial.println(String(nextFeedTime.day) + String(".") + String(nextFeedTime.month) + String(".") + String(nextFeedTime.year) + String(" ") + String(nextFeedTime.hour) + String(":") + String(nextFeedTime.minute));
+#endif
   }
   else
   {
     lcd.print("Clock not found");
     lcd.setCursor(0, 1);
+#if LOGGING
     lcd.print("Press select");
     Serial.println("---");
+#endif
   }
 }
 
 void setup()
 {
   lcd.begin(16, 2);
+#if LOGGING
   Serial.begin(9600);
+#endif
   pinMode(A0, INPUT_PULLUP);
-  selfCheck();
   config.load();
   initMenus();
+  selfCheck();
   feeder.setPortionSize(config.portionSize);
+  feeder.setSpeed(config.speed);
   selector.setMainMenu(menus);
   feederTimer.start();
   showNextFeedTime();

@@ -1,4 +1,5 @@
 #include "Feeder.h"
+#define LOGGING false
 
 Feeder::Feeder(uint8_t stepPin, uint8_t dirPin, uint8_t enable_pin) : stepPin(stepPin), dirPin(dirPin), enable_pin(enable_pin)
 {
@@ -11,15 +12,19 @@ Feeder::Feeder(uint8_t stepPin, uint8_t dirPin, uint8_t enable_pin) : stepPin(st
 void Feeder::setSpeed(uint8_t s)
 {
     this->speed = s;
+#if LOGGING
     Serial.print("Speed set to: ");
     Serial.println(this->speed);
+#endif
 }
 
 void Feeder::setPortionSize(uint8_t ps)
 {
     this->portionSize = ps;
+#if LOGGING
     Serial.print("Portion size set to: ");
     Serial.println(this->portionSize);
+#endif
 }
 
 void Feeder::setDirection(bool clockwise)
@@ -32,10 +37,12 @@ void Feeder::feedPortion()
     digitalWrite(dirPin, clockwise ? HIGH : LOW);
     int speedDelay = 400 * (11 - speed);
     int totalSteps = 50 * portionSize;
+#if LOGGING
     Serial.print("Speed delay:");
     Serial.println(speedDelay);
     Serial.print("Total steps:");
     Serial.println(totalSteps);
+#endif
     for (int i = 0; i < totalSteps; i++)
     {
         digitalWrite(stepPin, HIGH);
