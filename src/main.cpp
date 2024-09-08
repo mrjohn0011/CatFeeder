@@ -10,10 +10,10 @@
 
 #define FAKE_RTC_YEAR 2024
 #define FAKE_RTC_MONTH 9
-#define FAKE_RTC_DAY 1
-#define FAKE_RTC_HOUR 10
-#define FAKE_RTC_MIN 30
-#define FAKE_RTC_SEC 0
+#define FAKE_RTC_DAY 8
+#define FAKE_RTC_HOUR 16
+#define FAKE_RTC_MIN 38
+#define FAKE_RTC_SEC 15
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 MenuSelector selector(&lcd, 0, MENU_COUNT + SCHEDULE_COUNT);
@@ -34,6 +34,7 @@ void setupCurrentTime()
 #endif
   Datime dt = nowTime.get();
 #if LOGGING
+  Serial.println("Current time: " + nowTime.toString());
   Serial.print("Setting new current time: ");
   Serial.println(nowTime.toString());
 #endif
@@ -208,11 +209,15 @@ void regularScheduleCheck()
       config.save();
     }
   }
+  else
+  {
+    lcd.setCursor(0, 1);
+    lcd.print("Press select");
+  }
 }
 
 void showNextFeedTime()
 {
-  Serial.print("Showing next feed time: ");
   lcd.clear();
   lcd.setCursor(0, 0);
   if (checkRTC())
@@ -222,7 +227,6 @@ void showNextFeedTime()
 #else
     Stamp nowTime = Stamp(FAKE_RTC_YEAR, FAKE_RTC_MONTH, FAKE_RTC_DAY, FAKE_RTC_HOUR, FAKE_RTC_MIN, FAKE_RTC_SEC);
 #endif
-
     lcd.print("Next feed time:");
     lcd.setCursor(0, 1);
     Datime nextFeedTime = config.getNextFeed(nowTime);
@@ -233,10 +237,12 @@ void showNextFeedTime()
   }
   else
   {
+    lcd.clear();
+    lcd.setCursor(0, 0);
     lcd.print("Clock not found");
     lcd.setCursor(0, 1);
-#if LOGGING
     lcd.print("Press select");
+#if LOGGING
     Serial.println("---");
 #endif
   }

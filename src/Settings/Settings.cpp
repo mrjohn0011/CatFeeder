@@ -19,12 +19,10 @@ void Settings::load()
         {
             EEPROM.get(address, portions[i]);
             address = eepromAddress(i + 1);
-#if LOGGING
             Serial.print("Loaded portion " + String(i) + ": ");
             Serial.print(portions[i].toString());
             Serial.print("; Last feed: ");
             Serial.println(portions[i].getLastFeed().toString());
-#endif
         }
 
         EEPROM.get(address + 1, speed);
@@ -41,7 +39,7 @@ void Settings::reset()
     portionSize = 5;
     for (int i = 0; i < schedulesCount; ++i)
     {
-        portions[i] = Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1);
+        portions[i] = Portion(Stamp(2024, 9, 1, 12, 30, 0), 1, 0);
     }
 }
 
@@ -49,21 +47,26 @@ void Settings::save()
 {
     EEPROM.write(eepromStartAddress, actualVersion);
     int address = eepromAddress(0);
-#if LOGGING
     Serial.println("Saving settings");
-    Serial.print("Writing address ");
-    Serial.println(address);
-#endif
 
     for (int i = 0; i < schedulesCount; i++)
     {
         EEPROM.put(address, portions[i]);
         address = eepromAddress(i + 1);
+#if LOGGING
+        Serial.print("Saved portion " + String(i) + ": ");
+        Serial.print(portions[i].toString());
+        Serial.print("; Last feed: ");
+        Serial.println(portions[i].getLastFeed().toString());
+#endif
     }
 
     EEPROM.put(address + 1, speed);
     EEPROM.put(address + 2, portionSize);
+#if LOGGING
     Serial.println("Saved speed: " + String(speed));
+    Serial.println("Saved portion size: " + String(portionSize));
+#endif
 }
 
 Datime Settings::getNextFeed(Stamp currentTime)
@@ -72,6 +75,8 @@ Datime Settings::getNextFeed(Stamp currentTime)
     for (int i = 0; i < schedulesCount; ++i)
     {
         Datime currentPortion = portions[i].getNextFeed(currentTime);
+        Serial.print("Next feed for " + String(i) + ": ");
+        Serial.println(currentPortion.toString());
         if (currentPortion.getUnix() < nextFeed.getUnix())
         {
             nextFeed = currentPortion;

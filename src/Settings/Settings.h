@@ -20,10 +20,10 @@ public:
     uint8_t speed = 5;
     uint8_t portionSize = 5;
     Portion portions[4] = {
-        Portion(Stamp(2024, 9, 1, 10, 30, 0), 0, 1),
-        Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1),
-        Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1),
-        Portion(Stamp(2024, 9, 1, 12, 30, 0), 0, 1)};
+        Portion(Stamp(2024, 9, 1, 10, 30, 0), 1, 0),
+        Portion(Stamp(2024, 9, 1, 12, 30, 0), 1, 0),
+        Portion(Stamp(2024, 9, 1, 12, 30, 0), 1, 0),
+        Portion(Stamp(2024, 9, 1, 12, 30, 0), 1, 0)};
 
     void load();
     void reset();

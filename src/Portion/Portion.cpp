@@ -23,10 +23,25 @@ Datime Portion::getLastFeed()
 
 Datime Portion::getNextFeed(Stamp currentTime)
 {
-    uint32_t daysElapsed = (currentTime.get().getUnix() - startFrom.get().getUnix()) / 86400;
+    uint32_t currentUnix = currentTime.get().getUnix();
+    uint32_t startUnix = startFrom.get().getUnix();
+
+    if (interval == 0)
+    {
+        return Datime(0, 0, 0, 0, 0, 0);
+    }
+
+    if (currentUnix < startUnix)
+    {
+        return startFrom.get();
+    }
+
+    uint32_t daysElapsed = (currentUnix - startUnix) / 86400;
     uint32_t daysToNext = interval - (daysElapsed % interval);
-    Datime nextFeed = Datime(startFrom.getUnix());
-    nextFeed.addDays(daysToNext);
+
+    Datime nextFeed = Datime(startUnix);
+    nextFeed.addDays(daysElapsed + daysToNext);
+
     return nextFeed;
 }
 

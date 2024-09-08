@@ -374,8 +374,8 @@ Portion MenuSelector::selectPortion(Portion defaultPortion)
         {d.month, 3, 2, 1, 12},
         {d.hour, 6, 2, 0, 23},
         {d.minute, 9, 2, 0, 59},
-        {defaultPortion.getAmount(), 12, 1, 0, 9},
-        {defaultPortion.getInterval(), 14, 2, 1, 99}};
+        {defaultPortion.getAmount(), 12, 1, 1, 9},
+        {defaultPortion.getInterval(), 14, 2, 0, 99}};
 
     lcd->setCursor(0, 1);
     lcd->print(defaultPortion.toString());
